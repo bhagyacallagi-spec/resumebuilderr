@@ -6,7 +6,7 @@ import ModernTemplate from './templates/ModernTemplate';
 import MinimalTemplate from './templates/MinimalTemplate';
 
 export default function ResumePreview() {
-  const { resumeData, template } = useResume();
+  const { resumeData, template, colorTheme } = useResume();
   const { personalInfo, summary, education, experience, projects, skills } = resumeData;
 
   const hasAnyContent = 
@@ -36,11 +36,11 @@ export default function ResumePreview() {
   // Render selected template
   switch (template) {
     case 'modern':
-      return <ModernTemplate data={resumeData} />;
+      return <ModernTemplate data={resumeData} colorTheme={colorTheme} />;
     case 'minimal':
-      return <MinimalTemplate data={resumeData} />;
+      return <MinimalTemplate data={resumeData} colorTheme={colorTheme} />;
     case 'classic':
     default:
-      return <ClassicTemplate data={resumeData} />;
+      return <ClassicTemplate data={resumeData} colorTheme={colorTheme} />;
   }
 }

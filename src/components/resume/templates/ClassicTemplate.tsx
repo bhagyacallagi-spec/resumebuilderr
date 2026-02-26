@@ -1,18 +1,20 @@
 'use client';
 
-import { ResumeData } from '@/context/resume-context';
+import { ResumeData, ColorTheme, COLOR_VALUES } from '@/context/resume-context';
 
 interface ClassicTemplateProps {
   data: ResumeData;
+  colorTheme?: ColorTheme;
 }
 
-export default function ClassicTemplate({ data }: ClassicTemplateProps) {
+export default function ClassicTemplate({ data, colorTheme = 'teal' }: ClassicTemplateProps) {
   const { personalInfo, summary, education, experience, projects, skills, links } = data;
+  const accentColor = COLOR_VALUES[colorTheme];
 
   return (
     <div className="bg-white p-8 min-h-full">
       {/* Header */}
-      <div className="border-b-2 border-black pb-4 mb-4">
+      <div className="border-b-2 pb-4 mb-4" style={{ borderColor: accentColor }}>
         {personalInfo.name && (
           <h1 className="text-3xl font-bold text-black uppercase tracking-wide">
             {personalInfo.name}
@@ -45,7 +47,7 @@ export default function ClassicTemplate({ data }: ClassicTemplateProps) {
       {/* Summary */}
       {summary && (
         <div className="mb-4">
-          <h2 className="text-sm font-bold text-black uppercase tracking-wider border-b border-slate-300 pb-1 mb-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-slate-300 pb-1 mb-2" style={{ color: accentColor }}>
             Summary
           </h2>
           <p className="text-sm text-slate-800 leading-relaxed">{summary}</p>
@@ -55,7 +57,7 @@ export default function ClassicTemplate({ data }: ClassicTemplateProps) {
       {/* Experience */}
       {experience.length > 0 && (
         <div className="mb-4">
-          <h2 className="text-sm font-bold text-black uppercase tracking-wider border-b border-slate-300 pb-1 mb-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-slate-300 pb-1 mb-2" style={{ color: accentColor }}>
             Experience
           </h2>
           <div className="space-y-3">
@@ -82,7 +84,7 @@ export default function ClassicTemplate({ data }: ClassicTemplateProps) {
       {/* Education */}
       {education.length > 0 && (
         <div className="mb-4">
-          <h2 className="text-sm font-bold text-black uppercase tracking-wider border-b border-slate-300 pb-1 mb-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-slate-300 pb-1 mb-2" style={{ color: accentColor }}>
             Education
           </h2>
           <div className="space-y-2">
@@ -106,7 +108,7 @@ export default function ClassicTemplate({ data }: ClassicTemplateProps) {
       {/* Projects */}
       {projects.length > 0 && (
         <div className="mb-4">
-          <h2 className="text-sm font-bold text-black uppercase tracking-wider border-b border-slate-300 pb-1 mb-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-slate-300 pb-1 mb-2" style={{ color: accentColor }}>
             Projects
           </h2>
           <div className="space-y-3">
@@ -148,7 +150,7 @@ export default function ClassicTemplate({ data }: ClassicTemplateProps) {
       {/* Skills */}
       {(skills.technical.length > 0 || skills.soft.length > 0 || skills.tools.length > 0) && (
         <div>
-          <h2 className="text-sm font-bold text-black uppercase tracking-wider border-b border-slate-300 pb-1 mb-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-slate-300 pb-1 mb-2" style={{ color: accentColor }}>
             Skills
           </h2>
           <div className="space-y-2">

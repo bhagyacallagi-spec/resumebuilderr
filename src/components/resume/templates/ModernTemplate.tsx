@@ -1,13 +1,15 @@
 'use client';
 
-import { ResumeData } from '@/context/resume-context';
+import { ResumeData, ColorTheme, COLOR_VALUES } from '@/context/resume-context';
 
 interface ModernTemplateProps {
   data: ResumeData;
+  colorTheme?: ColorTheme;
 }
 
-export default function ModernTemplate({ data }: ModernTemplateProps) {
+export default function ModernTemplate({ data, colorTheme = 'teal' }: ModernTemplateProps) {
   const { personalInfo, summary, education, experience, projects, skills, links } = data;
+  const accentColor = COLOR_VALUES[colorTheme];
 
   return (
     <div className="bg-white p-8 min-h-full">

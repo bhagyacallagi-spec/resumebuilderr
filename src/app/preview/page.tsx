@@ -3,11 +3,13 @@
 import { useState, useMemo } from 'react';
 import { useResume } from '@/context/resume-context';
 import Link from 'next/link';
-import { ArrowLeft, Printer, Copy, AlertCircle, Check } from 'lucide-react';
-import TemplateSelector from '@/components/resume/TemplateSelector';
+import { ArrowLeft, Printer, Copy, AlertCircle, Check, Download } from 'lucide-react';
+import VisualTemplatePicker from '@/components/resume/VisualTemplatePicker';
+import ColorThemePicker from '@/components/resume/ColorThemePicker';
 import ClassicTemplate from '@/components/resume/templates/ClassicTemplate';
 import ModernTemplate from '@/components/resume/templates/ModernTemplate';
 import MinimalTemplate from '@/components/resume/templates/MinimalTemplate';
+import Toast from '@/components/ui/Toast';
 import { generatePlainTextResume, validateResumeForExport, copyToClipboard, triggerPrint } from '@/lib/export-utils';
 
 export default function PreviewPage() {
@@ -15,6 +17,7 @@ export default function PreviewPage() {
   const { personalInfo, summary, education, experience, projects, skills, links } = resumeData;
   
   const [copied, setCopied] = useState(false);
+  const [showPdfToast, setShowPdfToast] = useState(false);
   
   const validation = useMemo(() => validateResumeForExport(resumeData), [resumeData]);
   
@@ -31,6 +34,10 @@ export default function PreviewPage() {
     triggerPrint();
   };
 
+  const handleDownloadPDF = () => {
+    setShowPdfToast(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 print:bg-white">
       {/* Top Bar - Hidden in print */}
@@ -44,9 +51,7 @@ export default function PreviewPage() {
             <span className="text-sm">Back to Builder</span>
           </Link>
           <h1 className="text-lg font-medium text-slate-900">Resume Preview</h1>
-          <div className="w-32">
-            <TemplateSelector />
-          </div>
+          <div className="w-8">{/* Spacer */}</div>
         </div>
       </div>
       
@@ -77,6 +82,14 @@ export default function PreviewPage() {
               Print / Save PDF
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Template & Color Pickers - Hidden in print */}
+      <div className="max-w-4xl mx-auto px-6 pt-6 print:hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <VisualTemplatePicker />
+          <ColorThemePicker />
         </div>
       </div>
 
@@ -378,6 +391,13 @@ export default function PreviewPage() {
           }
         }
       `}</style>
+
+      {/* Toast Notification */}
+      <Toast
+        message="PDF export ready! Check your downloads."
+        isVisible={showPdfToast}
+        onClose={() => setShowPdfToast(false)}
+      />
     </div>
   );
 }

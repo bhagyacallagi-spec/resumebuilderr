@@ -4,8 +4,19 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 
 const STORAGE_KEY = 'resumeBuilderData';
 const TEMPLATE_KEY = 'resumeBuilderTemplate';
+const COLOR_KEY = 'resumeBuilderColor';
 
 export type TemplateType = 'classic' | 'modern' | 'minimal';
+
+export type ColorTheme = 'teal' | 'navy' | 'burgundy' | 'forest' | 'charcoal';
+
+export const COLOR_VALUES: Record<ColorTheme, string> = {
+  teal: 'hsl(168, 60%, 40%)',
+  navy: 'hsl(220, 60%, 35%)',
+  burgundy: 'hsl(345, 60%, 35%)',
+  forest: 'hsl(150, 50%, 30%)',
+  charcoal: 'hsl(0, 0%, 25%)',
+};
 
 export interface PersonalInfo {
   name: string;
@@ -172,6 +183,8 @@ interface ResumeContextType {
   suggestions: Suggestion[];
   template: TemplateType;
   setTemplate: (template: TemplateType) => void;
+  colorTheme: ColorTheme;
+  setColorTheme: (color: ColorTheme) => void;
   updatePersonalInfo: (info: Partial<PersonalInfo>) => void;
   updateSummary: (summary: string) => void;
   addEducation: (education: Omit<Education, 'id'>) => void;
@@ -318,12 +331,14 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const [atsScore, setAtsScore] = useState<ATSScore>(calculateATSScore(defaultResumeData));
   const [suggestions, setSuggestions] = useState<Suggestion[]>(generateSuggestions(defaultResumeData, calculateATSScore(defaultResumeData)));
   const [template, setTemplateState] = useState<TemplateType>('classic');
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>('teal');
 
   // Load from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY);
       const storedTemplate = localStorage.getItem(TEMPLATE_KEY);
+      const storedColor = localStorage.getItem(COLOR_KEY);
       
       if (stored) {
         try {
@@ -340,6 +355,10 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       if (storedTemplate) {
         setTemplateState(storedTemplate as TemplateType);
       }
+      
+      if (storedColor) {
+        setColorThemeState(storedColor as ColorTheme);
+      }
     }
   }, []);
 
@@ -347,6 +366,13 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     setTemplateState(newTemplate);
     if (typeof window !== 'undefined') {
       localStorage.setItem(TEMPLATE_KEY, newTemplate);
+    }
+  }, []);
+
+  const setColorTheme = useCallback((newColor: ColorTheme) => {
+    setColorThemeState(newColor);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(COLOR_KEY, newColor);
     }
   }, []);
 
@@ -493,6 +519,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
         suggestions,
         template,
         setTemplate,
+        colorTheme,
+        setColorTheme,
         updatePersonalInfo,
         updateSummary,
         addEducation,
