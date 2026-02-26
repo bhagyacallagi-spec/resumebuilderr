@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { ArrowLeft, Printer, Copy, AlertCircle, Check, Download } from 'lucide-react';
 import VisualTemplatePicker from '@/components/resume/VisualTemplatePicker';
 import ColorThemePicker from '@/components/resume/ColorThemePicker';
+import ATSScoreDisplay from '@/components/resume/ATSScoreDisplay';
+import ImprovementSuggestions from '@/components/resume/ImprovementSuggestions';
 import ClassicTemplate from '@/components/resume/templates/ClassicTemplate';
 import ModernTemplate from '@/components/resume/templates/ModernTemplate';
 import MinimalTemplate from '@/components/resume/templates/MinimalTemplate';
@@ -90,6 +92,16 @@ export default function PreviewPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <VisualTemplatePicker />
           <ColorThemePicker />
+        </div>
+      </div>
+
+      {/* ATS Score and Suggestions - Hidden in print */}
+      <div className="max-w-4xl mx-auto px-6 print:hidden">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <ATSScoreDisplay />
+          <div className="md:col-span-2">
+            <ImprovementSuggestions />
+          </div>
         </div>
       </div>
 

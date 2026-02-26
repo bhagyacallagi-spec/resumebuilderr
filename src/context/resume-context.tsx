@@ -161,13 +161,17 @@ export interface ATSScore {
   score: number;
   maxScore: number;
   breakdown: {
+    name: number;
+    email: number;
+    phone: number;
+    linkedin: number;
+    github: number;
     summary: number;
-    projects: number;
+    summaryVerbs: number;
     experience: number;
-    skills: number;
-    links: number;
-    metrics: number;
     education: number;
+    skills: number;
+    projects: number;
   };
 }
 
@@ -206,60 +210,89 @@ interface ResumeContextType {
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
-// Helper function to calculate ATS Score
+// Action verbs for summary scoring
+const ACTION_VERBS = [
+  'built', 'led', 'designed', 'improved', 'developed', 'created', 'implemented',
+  'managed', 'spearheaded', 'architected', 'engineered', 'launched', 'delivered',
+  'optimized', 'automated', 'mentored', 'collaborated', 'achieved', 'increased',
+  'reduced', 'streamlined', 'solved', 'innovated', 'transformed', 'drove'
+];
+
+// Helper function to calculate ATS Score (Step 8 rules)
 function calculateATSScore(data: ResumeData): ATSScore {
   const breakdown = {
+    name: 0,
+    email: 0,
+    phone: 0,
+    linkedin: 0,
+    github: 0,
     summary: 0,
-    projects: 0,
+    summaryVerbs: 0,
     experience: 0,
-    skills: 0,
-    links: 0,
-    metrics: 0,
     education: 0,
+    skills: 0,
+    projects: 0,
   };
 
-  // +15 if summary length is 40-120 words
-  const summaryWordCount = data.summary.trim().split(/\s+/).filter(w => w.length > 0).length;
-  if (summaryWordCount >= 40 && summaryWordCount <= 120) {
-    breakdown.summary = 15;
+  // +10 if name provided
+  if (data.personalInfo.name.trim()) {
+    breakdown.name = 10;
   }
 
-  // +10 if at least 2 projects
-  if (data.projects.length >= 2) {
-    breakdown.projects = 10;
+  // +10 if email provided
+  if (data.personalInfo.email.trim()) {
+    breakdown.email = 10;
   }
 
-  // +10 if at least 1 experience entry
-  if (data.experience.length >= 1) {
-    breakdown.experience = 10;
+  // +5 if phone provided
+  if (data.personalInfo.phone.trim()) {
+    breakdown.phone = 5;
   }
 
-  // +10 if total skills across all categories >= 8 items
+  // +5 if LinkedIn provided
+  if (data.links.linkedin.trim()) {
+    breakdown.linkedin = 5;
+  }
+
+  // +5 if GitHub provided
+  if (data.links.github.trim()) {
+    breakdown.github = 5;
+  }
+
+  // +10 if summary > 50 chars
+  if (data.summary.trim().length > 50) {
+    breakdown.summary = 10;
+  }
+
+  // +10 if summary contains action verbs
+  const summaryLower = data.summary.toLowerCase();
+  const hasActionVerb = ACTION_VERBS.some(verb => summaryLower.includes(verb));
+  if (hasActionVerb) {
+    breakdown.summaryVerbs = 10;
+  }
+
+  // +15 if at least 1 experience entry with bullets (description)
+  const hasExperienceWithBullets = data.experience.some(exp => 
+    exp.title && exp.company && exp.description.trim()
+  );
+  if (hasExperienceWithBullets) {
+    breakdown.experience = 15;
+  }
+
+  // +10 if at least 1 education entry
+  if (data.education.length >= 1) {
+    breakdown.education = 10;
+  }
+
+  // +10 if at least 5 skills added (total across categories)
   const totalSkills = data.skills.technical.length + data.skills.soft.length + data.skills.tools.length;
-  if (totalSkills >= 8) {
+  if (totalSkills >= 5) {
     breakdown.skills = 10;
   }
 
-  // +10 if GitHub or LinkedIn link exists
-  if (data.links.github || data.links.linkedin) {
-    breakdown.links = 10;
-  }
-
-  // +15 if any experience/project bullet contains a number (%, X, k, etc.)
-  const hasMetrics = [...data.experience, ...data.projects].some(item => {
-    const text = 'description' in item ? item.description : '';
-    return /\d|%|\b[kmb]\b/i.test(text);
-  });
-  if (hasMetrics) {
-    breakdown.metrics = 15;
-  }
-
-  // +10 if education section has complete fields
-  const hasCompleteEducation = data.education.some(edu => 
-    edu.school && edu.degree && edu.field
-  );
-  if (hasCompleteEducation) {
-    breakdown.education = 10;
+  // +10 if at least 1 project added
+  if (data.projects.length >= 1) {
+    breakdown.projects = 10;
   }
 
   const totalScore = Object.values(breakdown).reduce((sum, val) => sum + val, 0);
@@ -275,55 +308,88 @@ function calculateATSScore(data: ResumeData): ATSScore {
 function generateSuggestions(data: ResumeData, score: ATSScore): Suggestion[] {
   const suggestions: Suggestion[] = [];
 
-  if (score.breakdown.summary < 15) {
+  if (score.breakdown.name < 10) {
+    suggestions.push({
+      id: 'name',
+      message: 'Add your name (+10 points).',
+      priority: 'high',
+    });
+  }
+
+  if (score.breakdown.email < 10) {
+    suggestions.push({
+      id: 'email',
+      message: 'Add your email address (+10 points).',
+      priority: 'high',
+    });
+  }
+
+  if (score.breakdown.summary < 10) {
     suggestions.push({
       id: 'summary',
-      message: 'Write a stronger summary (40–120 words).',
+      message: 'Add a professional summary (+10 points).',
       priority: 'high',
     });
   }
 
-  if (score.breakdown.projects < 10) {
+  if (score.breakdown.experience < 15) {
     suggestions.push({
-      id: 'projects',
-      message: 'Add at least 2 projects.',
+      id: 'experience',
+      message: 'Add work experience with bullet points (+15 points).',
       priority: 'high',
-    });
-  }
-
-  if (score.breakdown.metrics < 15) {
-    suggestions.push({
-      id: 'metrics',
-      message: 'Add measurable impact (numbers) in bullets.',
-      priority: 'high',
-    });
-  }
-
-  if (score.breakdown.skills < 10) {
-    suggestions.push({
-      id: 'skills',
-      message: 'Add more skills (target 8+).',
-      priority: 'medium',
-    });
-  }
-
-  if (score.breakdown.links < 10) {
-    suggestions.push({
-      id: 'links',
-      message: 'Add GitHub or LinkedIn link.',
-      priority: 'medium',
     });
   }
 
   if (score.breakdown.education < 10) {
     suggestions.push({
       id: 'education',
-      message: 'Complete education section.',
+      message: 'Add education details (+10 points).',
+      priority: 'medium',
+    });
+  }
+
+  const totalSkills = data.skills.technical.length + data.skills.soft.length + data.skills.tools.length;
+  if (totalSkills < 5) {
+    suggestions.push({
+      id: 'skills',
+      message: 'Add at least 5 skills (+10 points).',
+      priority: 'medium',
+    });
+  }
+
+  if (score.breakdown.projects < 10) {
+    suggestions.push({
+      id: 'projects',
+      message: 'Add at least one project (+10 points).',
+      priority: 'medium',
+    });
+  }
+
+  if (score.breakdown.phone < 5) {
+    suggestions.push({
+      id: 'phone',
+      message: 'Add your phone number (+5 points).',
       priority: 'low',
     });
   }
 
-  return suggestions.slice(0, 3);
+  if (score.breakdown.linkedin < 5) {
+    suggestions.push({
+      id: 'linkedin',
+      message: 'Add LinkedIn profile (+5 points).',
+      priority: 'low',
+    });
+  }
+
+  if (score.breakdown.github < 5) {
+    suggestions.push({
+      id: 'github',
+      message: 'Add GitHub profile (+5 points).',
+      priority: 'low',
+    });
+  }
+
+  return suggestions.slice(0, 5);
 }
 
 export function ResumeProvider({ children }: { children: ReactNode }) {
